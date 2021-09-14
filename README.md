@@ -7,22 +7,35 @@
 ## Queries
 
 ### (3) available classes
-```
-select c.id as class_id, c.name as class_name, c.area_of_interest, c.capacity, l.name as lecturer_name, l.rating, 
-case when ce.id is not null then true else false end as already_enrolled
+```sql
+select c.id as class_id,
+       c.name as class_name,
+       c.area_of_interest,
+       c.capacity,
+       l.name as lecturer_name,
+       l.rating,
+       case when ce.id is not null then true else false end as already_enrolled
 from classes c
-join lecturer l on c.lecturer_id=l.id
-left join class_enrollment ce on ce.class_id=c.id and ce.student_id=(<id>)
-where c.area_of_interest in (<areas>)
+         join lecturer l on c.lecturer_id = l.id
+         left join class_enrollment ce on ce.class_id = c.id 
+         and ce.student_id = 0 -- replace with current student id
+where c.area_of_interest in ('area 1') -- replace with list of student interests or subquery
 order by l.rating desc -- assumes higher rating values are better
 ```
 
 ### (5) classes where # of students is < 50% capacity
-```
-select c.id as class_id, c.name, c.lecturer_id as lecturer_id, enrollment_counts.num_students, c.capacity
-from (select ce.class_id, count(*) as num_students from class_enrollment ce group by ce.class_id) enrollment_counts
-join classes c on enrollment_counts.class_id=c.id
-where enrollment_counts.num_students < (0.5*c.capacity)
+```sql
+select c.id          as class_id,
+       c.name,
+       c.lecturer_id as lecturer_id,
+       enrollment_counts.num_students,
+       c.capacity
+from (select ce.class_id,
+             count(*) as num_students
+      from class_enrollment ce
+      group by ce.class_id) enrollment_counts
+         join classes c on enrollment_counts.class_id = c.id
+where enrollment_counts.num_students < (0.5 * c.capacity)
 ```
 
 
